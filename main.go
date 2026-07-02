@@ -4,11 +4,11 @@
 //
 // Controls (default):
 //
-//	RightMeta + <key>              -> toggle recording for the macro slot "<key>"
+//	RightAlt + <key>              -> toggle recording for the macro slot "<key>"
 //	                                   (press once to start, press the SAME key
-//	                                   again while RightMeta is held to stop and save)
-//	RightMeta + Shift + <key>      -> play back the macro saved to slot "<key>"
-//	LeftCtrl + RightMeta + <key>   -> open the macro's text file in your editor
+//	                                   again while RightAlt is held to stop and save)
+//	RightAlt + Shift + <key>      -> play back the macro saved to slot "<key>"
+//	LeftCtrl + RightAlt + <key>   -> open the macro's text file in your editor
 //	Esc                            -> abort whatever macro is currently playing
 //
 // Each macro is stored as its own plain text file under macros/<key>.macro:
@@ -46,6 +46,7 @@ import (
 	"time"
 
 	input "github.com/rsa17826/go-input-lib"
+	pp "github.com/rsa17826/gopp"
 	"github.com/rsa17826/input-manager/IMan"
 )
 
@@ -181,14 +182,14 @@ func openMacroFile(slot uint16) {
 	path := macroPath(slot)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		if err := saveMacro(slot, true, ""); err != nil {
-			fmt.Println("failed to create macro file:", err)
+			p.Plain("failed to create macro file:", err)
 			return
 		}
 	}
 	cmd := exec.Command("xdg-open", path)
 	if err := cmd.Start(); err != nil {
-		fmt.Println("failed to open editor (is xdg-open installed?):", err)
-		fmt.Println("macro file is at:", path)
+		p.Plain("failed to open editor (is xdg-open installed?):", err)
+		p.Plain("macro file is at:", path)
 	}
 }
 
@@ -262,11 +263,11 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 		default:
 		}
 		if err := send.Send(IMan.WireEvent{Type: input.EV_KEY, Code: code, Value: value}); err != nil {
-			fmt.Println("macro send error:", err)
+			p.Plain("macro send error:", err)
 			return false
 		}
 		if err := send.Send(IMan.WireEvent{Type: input.EV_SYN, Code: 0, Value: 0}); err != nil {
-			fmt.Println("macro send error:", err)
+			p.Plain("macro send error:", err)
 			return false
 		}
 		if sleepInterruptible(10*time.Millisecond, abort) {
@@ -345,7 +346,7 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 			keyName := parts[0]
 			code, ok := KeyCodeByName(keyName)
 			if !ok {
-				println("WARNING: failed to find key", keyName)
+				p.Warn("WARNING: failed to find key", keyName)
 				continue // unknown key name, skip
 			}
 
@@ -415,6 +416,8 @@ func isModifierCode(code uint16) bool {
 	return false
 }
 
+var p = pp.New()
+
 func main() {
 	filterConn, err := IMan.Connect("macro-daemon", IMan.ModeFilter)
 	if err != nil {
@@ -427,6 +430,10 @@ func main() {
 	if err := filterConn.EnableKeyMap(false); err != nil {
 		panic(err)
 	}
+	p.Plain("hello", 42, map[string]any{"a": 1, "b": []int{1, 2, 3}})
+	p.Info("listening on", 8080) // gated by p.ShowInfo  (default: off)
+	p.Error("request failed:", err)
+	p.Success("deployment complete")
 
 	var recMu sync.Mutex
 	var recordingSlot uint16 = 0
@@ -435,11 +442,11 @@ func main() {
 	var firstToken = true
 	keysDownInMacro := map[uint16]bool{}
 
-	fmt.Println("macro daemon running.")
-	fmt.Println("  RightMeta + <key>            : start/stop recording macro on <key>")
-	fmt.Println("  RightMeta + Shift + <key>     : play macro bound to <key>")
-	fmt.Println("  LeftCtrl + RightMeta + <key>  : edit macro file for <key>")
-	fmt.Println("  Esc                           : abort a playing macro")
+	p.Plainest("macro daemon running.")
+	p.Plainest("  RightAlt + <key>            : start/stop recording macro on <key>")
+	p.Plainest("  RightAlt + Shift + <key>     : play macro bound to <key>")
+	p.Plainest("  LeftCtrl + RightAlt + <key>  : edit macro file for <key>")
+	p.Plainest("  Esc                           : abort a playing macro")
 
 	for {
 		re, err := filterConn.ReadNext()
@@ -483,7 +490,7 @@ func main() {
 
 			switch {
 			case ctrlHeld:
-				fmt.Printf("opening macro file for %q\n", KeyName(code))
+				p.Debug(fmt.Sprintf("opening macro file for %q\n", KeyName(code)))
 				openMacroFile(code)
 
 			case shiftHeld:
@@ -520,7 +527,7 @@ func main() {
 					fmt.Printf("recording macro on %q...\n", KeyName(code))
 				case code:
 					if err := saveMacro(code, true, recordBuf.String()); err != nil {
-						fmt.Println("failed to save macro:", err)
+						p.Plain("failed to save macro:", err)
 					} else {
 						fmt.Printf("saved macro %q: %s\n", KeyName(code), recordBuf.String())
 					}

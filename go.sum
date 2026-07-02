@@ -2,6 +2,14 @@ github.com/rsa17826/go-arg-lib v0.0.69 h1:G7TYCqUIw3z0QO2v5NHG4VDgY+5JR2nYInGDgx
 github.com/rsa17826/go-arg-lib v0.0.69/go.mod h1:eP/bXinIXD6bZWBMqk9eZJfkkKUcl66j0uuz1amrsdU=
 github.com/rsa17826/go-input-lib v0.0.39 h1:TJCHIDeFKMUtsshDxNWt9WMs+5I00qrdFkHmIW50wC0=
 github.com/rsa17826/go-input-lib v0.0.39/go.mod h1:T1wppzAanzal1KNtIJpew4sIFwCtlBWegq0vDriqwC0=
+github.com/rsa17826/gopp v0.0.0-20260702022117-2aa0d0de60d2 h1:3f4COIy5K61ATjWTpkbUFiYbaHBQZA61CUl/QgGcR70=
+github.com/rsa17826/gopp v0.0.0-20260702022117-2aa0d0de60d2/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.0-20260702022820-9143478f803a h1:NcVrCWkyuswkIGUGvjdqqzOeMOV4loRVp34QxtDcVlk=
+github.com/rsa17826/gopp v0.0.0-20260702022820-9143478f803a/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.0-20260702023210-eeedb3332fea h1:E8v5tMWFrCZiFDdsL6gM4C4BlY0wOi1uKLFdjqBxFNY=
+github.com/rsa17826/gopp v0.0.0-20260702023210-eeedb3332fea/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.1 h1:cBB8H8A+zkZlN04RtONPBajJU9aJ1V1gOMdyREsi7Nw=
+github.com/rsa17826/gopp v0.0.1/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
 github.com/rsa17826/input-manager v0.0.80 h1:qKh8m4j+ViOiKXZZQbK/b0FdbBGBdRctSTmM8UzOUec=
 github.com/rsa17826/input-manager v0.0.80/go.mod h1:roxAmjwCUVQ/inEH3vjYgbEhjbjtAmFGKDfz/wjnMr8=
 golang.org/x/sys v0.44.0 h1:ildZl3J4uzeKP07r2F++Op7E9B29JRUy+a27EibtBTQ=
