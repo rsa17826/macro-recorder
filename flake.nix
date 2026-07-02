@@ -21,7 +21,6 @@
       in
       {
         packages = {
-          # The actual package
           default = pkgs.buildGoModule {
             pname = "macro-recorder";
             version = "1";
@@ -30,7 +29,6 @@
           };
         };
         devShells = {
-          # Development environment
           default = pkgs.mkShell {
             buildInputs = with pkgs; [
               go
