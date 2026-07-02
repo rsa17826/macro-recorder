@@ -200,29 +200,29 @@ func openMacroFile(slot uint16) {
 type playState struct {
 	mu     sync.Mutex
 	abort  chan struct{}
-	active bool
+	Active bool
 }
 
 func (p *playState) Start() <-chan struct{} {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	p.abort = make(chan struct{})
-	p.active = true
+	p.Active = true
 	return p.abort
 }
 
 func (p *playState) Stop() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.active = false
+	p.Active = false
 }
 
 func (p *playState) Abort() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.active {
+	if p.Active {
 		close(p.abort)
-		p.active = false
+		p.Active = false
 	}
 }
 
@@ -345,6 +345,7 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 			keyName := parts[0]
 			code, ok := KeyCodeByName(keyName)
 			if !ok {
+				println("WARNING: failed to find key", keyName)
 				continue // unknown key name, skip
 			}
 
@@ -404,6 +405,7 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 // ─────────────────────────────────────────────────────────────────────────
 
 const modifierKey = input.KEY_RIGHTALT // hold this to arm record/play/edit triggers
+const playKey = input.KEY_RIGHTSHIFT   // hold this to arm record/play/edit triggers
 
 func isModifierCode(code uint16) bool {
 	switch code {
@@ -454,8 +456,13 @@ func main() {
 
 		// Esc aborts an in-flight macro, but otherwise behaves normally.
 		if code == input.KEY_ESC && ev.Value == 1 {
+			println(globalPlayState.Active)
+			if globalPlayState.Active {
+				filterConn.BlockInput(1)
+			} else {
+				filterConn.BlockInput(0)
+			}
 			globalPlayState.Abort()
-			filterConn.BlockInput(0)
 			continue
 		}
 
@@ -467,7 +474,7 @@ func main() {
 		modHeld := filterConn.IsPressed(modifierKey)
 
 		if modHeld && ev.Value == 1 {
-			shiftHeld := filterConn.IsPressed(input.KEY_LEFTSHIFT) || filterConn.IsPressed(input.KEY_RIGHTSHIFT)
+			shiftHeld := filterConn.IsPressed(playKey)
 			ctrlHeld := filterConn.IsPressed(input.KEY_LEFTCTRL)
 			filterConn.BlockInput(1) // swallow the trigger key itself
 
@@ -482,6 +489,16 @@ func main() {
 					fmt.Printf("no macro bound to %q\n", KeyName(code))
 				} else {
 					fmt.Printf("playing macro %q\n", KeyName(code))
+					sendConn.Send(IMan.WireEvent{
+						Code:  modifierKey,
+						Type:  input.EV_KEY,
+						Value: 0,
+					})
+					sendConn.Send(IMan.WireEvent{
+						Code:  playKey,
+						Type:  input.EV_KEY,
+						Value: 0,
+					})
 					abort := globalPlayState.Start()
 					go func() {
 						defer globalPlayState.Stop()
@@ -491,14 +508,14 @@ func main() {
 
 			default:
 				recMu.Lock()
-				switch {
-				case recordingSlot == 0:
+				switch recordingSlot {
+				case 0:
 					recordingSlot = code
 					recordBuf.Reset()
 					firstToken = true
 					keysDownInMacro = map[uint16]bool{}
 					fmt.Printf("recording macro on %q...\n", KeyName(code))
-				case recordingSlot == code:
+				case code:
 					if err := saveMacro(code, true, recordBuf.String()); err != nil {
 						fmt.Println("failed to save macro:", err)
 					} else {

@@ -1,3 +1,3 @@
 delay=true
 
-{a down}{delay 88ms}{s down}{delay 55ms}{d down}{delay 72ms}{a up}{delay 71ms}{s up}{delay 32ms}{d up}
+{a down}{delay 128ms}{s down}{delay 71ms}{d down}{delay 48ms}{a up}{delay 48ms}{s up}{delay 48ms}{d up}{delay 976ms}{a down}{delay 128ms}{a up}{delay 71ms}{a down}{delay 88ms}{a up}{delay 160ms}{s down}{delay 120ms}{s up}{delay 95ms}{s down}{delay 96ms}{d down}{delay 87ms}{s up}{delay 120ms}{d up}
