@@ -1,3 +1,4 @@
+// TODO make use xdg dirs
 // Command macro is a standalone daemon that lets you record keyboard macros
 // and bind them to keys, on top of the existing IMan / go-input-lib stack
 // used in main.go.
@@ -57,7 +58,7 @@ import (
 // namedKeys covers every non-printable / control key in types.go.
 var namedKeys = map[string]uint16{
 	"esc": input.KEY_ESC, "tab": input.KEY_TAB, "enter": input.KEY_ENTER,
-	"backspace": input.KEY_BACKSPACE, "space": input.KEY_SPACE,
+	"backspace": input.KEY_BACKSPACE, "space": input.KEY_SPACE, "spc": input.KEY_SPACE,
 	"capslock": input.KEY_CAPSLOCK, "numlock": input.KEY_NUMLOCK, "scrolllock": input.KEY_SCROLLLOCK,
 	"ctrl": input.KEY_LEFTCTRL, "lctrl": input.KEY_LEFTCTRL, "rctrl": input.KEY_RIGHTCTRL,
 	"shift": input.KEY_LEFTSHIFT, "lshift": input.KEY_LEFTSHIFT, "rshift": input.KEY_RIGHTSHIFT,
@@ -103,6 +104,9 @@ func init() {
 // KeyName returns the canonical macro-block / filename-safe name for a keycode.
 func KeyName(code uint16) string {
 	if name, ok := codeToName[code]; ok {
+		if name == " " {
+			return "spc"
+		}
 		return name
 	}
 	return fmt.Sprintf("code%d", code)
@@ -430,10 +434,6 @@ func main() {
 	if err := filterConn.EnableKeyMap(false); err != nil {
 		panic(err)
 	}
-	p.Log("hello", 42, map[string]any{"a": 1, "b": []int{1, 2, 3}})
-	p.Info("listening on", 8080) // gated by p.ShowInfo  (default: off)
-	p.Error("request failed:", err)
-	p.Success("deployment complete")
 
 	var recMu sync.Mutex
 	var recordingSlot uint16 = 0
@@ -466,6 +466,7 @@ func main() {
 		if code == input.KEY_ESC && ev.Value == 1 {
 			if modHeld && recordingSlot != 0 {
 				recordingSlot = 0
+				p.Log("macro recording aborted")
 				filterConn.BlockInput(1)
 			} else {
 				if globalPlayState.Active {
@@ -490,7 +491,7 @@ func main() {
 
 			switch {
 			case ctrlHeld:
-				p.Debug(fmt.Sprintf("opening macro file for %q", KeyName(code)))
+				p.Log(fmt.Sprintf("opening macro file for %q", KeyName(code)))
 				openMacroFile(code)
 
 			case shiftHeld:
@@ -527,13 +528,13 @@ func main() {
 					p.Log(fmt.Sprintf("recording macro on %q...", KeyName(code)))
 				case code:
 					if err := saveMacro(code, true, recordBuf.String()); err != nil {
-						p.Log("failed to save macro:", err)
+						p.Error("failed to save macro:", err)
 					} else {
-						p.Log(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))
+						p.Success(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))
 					}
 					recordingSlot = 0
 				default:
-					p.Log(fmt.Sprintf("already recording %q, ignoring %q", KeyName(recordingSlot), KeyName(code)))
+					p.Warn(fmt.Sprintf("already recording %q, ignoring %q", KeyName(recordingSlot), KeyName(code)))
 				}
 				recMu.Unlock()
 			}
