@@ -490,15 +490,15 @@ func main() {
 
 			switch {
 			case ctrlHeld:
-				p.Debug(fmt.Sprintf("opening macro file for %q\n", KeyName(code)))
+				p.Debug(fmt.Sprintf("opening macro file for %q", KeyName(code)))
 				openMacroFile(code)
 
 			case shiftHeld:
 				delayEnabled, seq, err := loadMacro(code)
 				if err != nil {
-					fmt.Printf("no macro bound to %q\n", KeyName(code))
+					p.Plain(fmt.Sprintf("no macro bound to %q", KeyName(code)))
 				} else {
-					fmt.Printf("playing macro %q\n", KeyName(code))
+					p.Plain(fmt.Sprintf("playing macro %q", KeyName(code)))
 					sendConn.Send(IMan.WireEvent{
 						Code:  modifierKey,
 						Type:  input.EV_KEY,
@@ -524,16 +524,16 @@ func main() {
 					recordBuf.Reset()
 					firstToken = true
 					keysDownInMacro = map[uint16]bool{}
-					fmt.Printf("recording macro on %q...\n", KeyName(code))
+					p.Log(fmt.Sprintf("recording macro on %q...", KeyName(code)))
 				case code:
 					if err := saveMacro(code, true, recordBuf.String()); err != nil {
 						p.Plain("failed to save macro:", err)
 					} else {
-						fmt.Printf("saved macro %q: %s\n", KeyName(code), recordBuf.String())
+						p.Log(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))
 					}
 					recordingSlot = 0
 				default:
-					fmt.Printf("already recording %q, ignoring %q\n", KeyName(recordingSlot), KeyName(code))
+					p.Log(fmt.Sprintf("already recording %q, ignoring %q", KeyName(recordingSlot), KeyName(code)))
 				}
 				recMu.Unlock()
 			}

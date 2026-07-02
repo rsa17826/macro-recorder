@@ -10,6 +10,12 @@ github.com/rsa17826/gopp v0.0.0-20260702023210-eeedb3332fea h1:E8v5tMWFrCZiFDdsL
 github.com/rsa17826/gopp v0.0.0-20260702023210-eeedb3332fea/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
 github.com/rsa17826/gopp v0.0.1 h1:cBB8H8A+zkZlN04RtONPBajJU9aJ1V1gOMdyREsi7Nw=
 github.com/rsa17826/gopp v0.0.1/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.2 h1:RVGK2Ycb7K1eaUGr+v1pm5lgme7fIOAmLF4nSQRh6RE=
+github.com/rsa17826/gopp v0.0.2/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.3 h1:KLxo/7Pzf1mRwxbOerfM2pzvhFwygD5h8eU8nlcVjuY=
+github.com/rsa17826/gopp v0.0.3/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
+github.com/rsa17826/gopp v0.0.4 h1:wxRCIW6oMkZBAaZTh7KPkoiISaWabAJ6BLtXDcA5BKU=
+github.com/rsa17826/gopp v0.0.4/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
 github.com/rsa17826/input-manager v0.0.80 h1:qKh8m4j+ViOiKXZZQbK/b0FdbBGBdRctSTmM8UzOUec=
 github.com/rsa17826/input-manager v0.0.80/go.mod h1:roxAmjwCUVQ/inEH3vjYgbEhjbjtAmFGKDfz/wjnMr8=
 golang.org/x/sys v0.44.0 h1:ildZl3J4uzeKP07r2F++Op7E9B29JRUy+a27EibtBTQ=
