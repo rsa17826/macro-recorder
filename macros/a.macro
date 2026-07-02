@@ -1,0 +1,3 @@
+delay=true
+
+{a down}{delay 88ms}{s down}{delay 55ms}{d down}{delay 72ms}{a up}{delay 71ms}{s up}{delay 32ms}{d up}

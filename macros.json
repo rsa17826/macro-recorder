@@ -1,0 +1,5 @@
+{
+  "macros": {
+    "30": "{delay 168ms}{a up}{delay 3048ms}{t down}{delay 159ms}{e down}{delay 15ms}{t up}{delay 32ms}{s down}{delay 112ms}{t down}{delay 40ms}{s up}{delay 23ms}{e up}{delay 72ms}{t up}{delay 3632ms}{a up}{delay 111ms}{rshift up}"
+  }
+}
