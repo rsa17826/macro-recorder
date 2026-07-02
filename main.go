@@ -228,9 +228,9 @@ func openMacroFile(slot uint16) {
 	}
 	cmd := exec.Command("xdg-open", path)
 	out, err := cmd.CombinedOutput()
-	p.Log("macro file is at:", path)
 	if err != nil {
 		p.Error("xdg-open failed:", err, string(out))
+		p.Log("macro file is at:", path)
 	} else {
 		p.Log("xdg-open exited cleanly, output:", string(out))
 	}
@@ -531,7 +531,7 @@ func main() {
 			switch {
 			case ctrlHeld:
 				p.Log(fmt.Sprintf("opening macro file for %q", KeyName(code)))
-				openMacroFile(code)
+				go openMacroFile(code)
 
 			case shiftHeld:
 				delayEnabled, seq, err := loadMacro(code)
