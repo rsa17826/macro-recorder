@@ -1,4 +1,4 @@
-// TODO make use xdg dirs
+// TODO when aborting macro release all keys pressed by the macro
 // Command macro is a standalone daemon that lets you record keyboard macros
 // and bind them to keys, on top of the existing IMan / go-input-lib stack
 // used in main.go.
@@ -135,7 +135,7 @@ func KeyCodeByName(name string) (uint16, bool) {
 // Per-key macro files
 // ─────────────────────────────────────────────────────────────────────────
 
-const macroDir = "macros"
+var macroDir = filepath.Join(getConfigHome(), "macros")
 
 func macroPath(slot uint16) string {
 	return filepath.Join(macroDir, KeyName(slot)+".macro")
@@ -154,6 +154,29 @@ func saveMacro(slot uint16, delayEnabled bool, body string) error {
 	}
 	content := fmt.Sprintf("delay=%t\n\n%s\n", delayEnabled, body)
 	return os.WriteFile(macroPath(slot), []byte(content), 0644)
+}
+
+func getConfigHome() string {
+	const ns = "macro-recorder"
+	var place = ""
+	var cfghome = os.Getenv("XDG_CONFIG_HOME")
+	if cfghome != "" {
+		place = filepath.Join(cfghome, ns)
+	} else {
+		var home = os.Getenv("HOME")
+		if home != "" {
+			place = filepath.Join(home, ".config", ns)
+		} else {
+			var uname = os.Getenv("USER")
+			if uname != "" {
+				place = filepath.Join("/home", uname, ".config", ns)
+			} else {
+				p.Error("NO ENV VARS SET - CAN'T FIND CONFIG LOCATION")
+				panic("NO ENV VARS SET - CAN'T FIND CONFIG LOCATION")
+			}
+		}
+	}
+	return place
 }
 
 // loadMacro reads and parses a macro file. Newlines in the body (added for
@@ -185,14 +208,14 @@ func loadMacro(slot uint16) (delayEnabled bool, body string, err error) {
 func openMacroFile(slot uint16) {
 	path := macroPath(slot)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		if err := saveMacro(slot, true, ""); err != nil {
-			p.Log("failed to create macro file:", err)
+		if err := saveMacro(slot, false, ""); err != nil {
+			p.Error("failed to create macro file:", err)
 			return
 		}
 	}
 	cmd := exec.Command("xdg-open", path)
 	if err := cmd.Start(); err != nil {
-		p.Log("failed to open editor (is xdg-open installed?):", err)
+		p.Error("failed to open editor (is xdg-open installed?):", err)
 		p.Log("macro file is at:", path)
 	}
 }
@@ -527,7 +550,7 @@ func main() {
 					keysDownInMacro = map[uint16]bool{}
 					p.Log(fmt.Sprintf("recording macro on %q...", KeyName(code)))
 				case code:
-					if err := saveMacro(code, true, recordBuf.String()); err != nil {
+					if err := saveMacro(code, false, recordBuf.String()); err != nil {
 						p.Error("failed to save macro:", err)
 					} else {
 						p.Success(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))

@@ -1,3 +1,0 @@
-delay=false
-
-{a down}{delay 88ms}{s down}{delay 88ms}{d down}{delay 40ms}{a up}{delay 56ms}{s up}{delay 55ms}{d up}{delay 104ms}{spc down}{delay 104ms}{spc up}{delay 31ms}{a down}{delay 120ms}{s down}{delay 103ms}{d down}{delay 56ms}{a up}{delay 24ms}{s up}{delay 47ms}{spc down}{delay 16ms}{d up}{delay 119ms}{spc up}{delay 72ms}{a down}{delay 112ms}{s down}{delay 64ms}{d down}{delay 48ms}{a up}{delay 64ms}{s up}{delay 15ms}{d up}
