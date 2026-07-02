@@ -454,13 +454,18 @@ func main() {
 		}
 		code := ev.Code
 
+		modHeld := filterConn.IsPressed(modifierKey)
 		// Esc aborts an in-flight macro, but otherwise behaves normally.
 		if code == input.KEY_ESC && ev.Value == 1 {
-			println(globalPlayState.Active)
-			if globalPlayState.Active {
+			if modHeld && recordingSlot != 0 {
+				recordingSlot = 0
 				filterConn.BlockInput(1)
 			} else {
-				filterConn.BlockInput(0)
+				if globalPlayState.Active {
+					filterConn.BlockInput(1)
+				} else {
+					filterConn.BlockInput(0)
+				}
 			}
 			globalPlayState.Abort()
 			continue
@@ -470,8 +475,6 @@ func main() {
 			filterConn.BlockInput(0)
 			continue
 		}
-
-		modHeld := filterConn.IsPressed(modifierKey)
 
 		if modHeld && ev.Value == 1 {
 			shiftHeld := filterConn.IsPressed(playKey)
