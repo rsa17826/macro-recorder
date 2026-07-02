@@ -227,9 +227,12 @@ func openMacroFile(slot uint16) {
 		}
 	}
 	cmd := exec.Command("xdg-open", path)
-	if err := cmd.Start(); err != nil {
-		p.Error("failed to open editor (is xdg-open installed?):", err)
-		p.Log("macro file is at:", path)
+	out, err := cmd.CombinedOutput()
+	p.Log("macro file is at:", path)
+	if err != nil {
+		p.Error("xdg-open failed:", err, string(out))
+	} else {
+		p.Log("xdg-open exited cleanly, output:", string(out))
 	}
 }
 
