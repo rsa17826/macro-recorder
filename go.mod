@@ -1,4 +1,4 @@
-module main
+module github.com/rsa17826/macro-recorder
 
 go 1.26.4
 
