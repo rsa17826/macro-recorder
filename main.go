@@ -182,14 +182,14 @@ func openMacroFile(slot uint16) {
 	path := macroPath(slot)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		if err := saveMacro(slot, true, ""); err != nil {
-			p.Plain("failed to create macro file:", err)
+			p.Log("failed to create macro file:", err)
 			return
 		}
 	}
 	cmd := exec.Command("xdg-open", path)
 	if err := cmd.Start(); err != nil {
-		p.Plain("failed to open editor (is xdg-open installed?):", err)
-		p.Plain("macro file is at:", path)
+		p.Log("failed to open editor (is xdg-open installed?):", err)
+		p.Log("macro file is at:", path)
 	}
 }
 
@@ -263,11 +263,11 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 		default:
 		}
 		if err := send.Send(IMan.WireEvent{Type: input.EV_KEY, Code: code, Value: value}); err != nil {
-			p.Plain("macro send error:", err)
+			p.Log("macro send error:", err)
 			return false
 		}
 		if err := send.Send(IMan.WireEvent{Type: input.EV_SYN, Code: 0, Value: 0}); err != nil {
-			p.Plain("macro send error:", err)
+			p.Log("macro send error:", err)
 			return false
 		}
 		if sleepInterruptible(10*time.Millisecond, abort) {
@@ -430,7 +430,7 @@ func main() {
 	if err := filterConn.EnableKeyMap(false); err != nil {
 		panic(err)
 	}
-	p.Plain("hello", 42, map[string]any{"a": 1, "b": []int{1, 2, 3}})
+	p.Log("hello", 42, map[string]any{"a": 1, "b": []int{1, 2, 3}})
 	p.Info("listening on", 8080) // gated by p.ShowInfo  (default: off)
 	p.Error("request failed:", err)
 	p.Success("deployment complete")
@@ -496,9 +496,9 @@ func main() {
 			case shiftHeld:
 				delayEnabled, seq, err := loadMacro(code)
 				if err != nil {
-					p.Plain(fmt.Sprintf("no macro bound to %q", KeyName(code)))
+					p.Log(fmt.Sprintf("no macro bound to %q", KeyName(code)))
 				} else {
-					p.Plain(fmt.Sprintf("playing macro %q", KeyName(code)))
+					p.Log(fmt.Sprintf("playing macro %q", KeyName(code)))
 					sendConn.Send(IMan.WireEvent{
 						Code:  modifierKey,
 						Type:  input.EV_KEY,
@@ -527,7 +527,7 @@ func main() {
 					p.Log(fmt.Sprintf("recording macro on %q...", KeyName(code)))
 				case code:
 					if err := saveMacro(code, true, recordBuf.String()); err != nil {
-						p.Plain("failed to save macro:", err)
+						p.Log("failed to save macro:", err)
 					} else {
 						p.Log(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))
 					}
