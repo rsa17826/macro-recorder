@@ -117,6 +117,9 @@ func KeyName(code uint16) string {
 		if name == "\n" {
 			return "\\n"
 		}
+		if name == "\t" {
+			return "\\t"
+		}
 		return name
 	}
 	return fmt.Sprintf("code%d", code)
