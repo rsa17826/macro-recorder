@@ -448,8 +448,8 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 // Recorder + daemon
 // ─────────────────────────────────────────────────────────────────────────
 
-const modifierKey = input.KEY_RIGHTALT // hold this to arm record/play/edit triggers
-const playKey = input.KEY_RIGHTSHIFT   // hold this to arm record/play/edit triggers
+const modifierKey = input.KEY_COMPOSE // hold this to arm record/play/edit triggers
+const playKey = input.KEY_RIGHTSHIFT  // hold this to arm record/play/edit triggers
 
 func isModifierCode(code uint16) bool {
 	switch code {
