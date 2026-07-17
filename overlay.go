@@ -6,6 +6,7 @@ import (
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
+	"gioui.org/io/system"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
@@ -38,14 +39,13 @@ type overlayStateT struct {
 	recordLast string // e.g. "d down", "delay 1000ms"
 
 	// playing
-	playSlot                   string // key name the macro is bound to
+	playSlot                    string // key name the macro is bound to
 	playPrev, playCur, playNext string
 }
 
 var overlay = &overlayStateT{}
 
-// overlayChanged wakes the GUI goroutine when state updates outside its
-// own frame loop.
+// overlayChanged wakes the manager/window goroutines whenever state changes.
 var overlayChanged = make(chan struct{}, 1)
 
 func notifyOverlay() {
@@ -96,11 +96,18 @@ func snapshot() overlayStateT {
 	}
 }
 
+func snapshotMode() overlayMode {
+	overlay.mu.Lock()
+	defer overlay.mu.Unlock()
+	return overlay.mode
+}
+
 // ─────────────────────────────────────────────────────────────────────────
-// GUI window
+// Window lifecycle manager — opens a window only while mode != idle, and
+// closes it (not just blanks it) the moment we go back to idle.
 // ─────────────────────────────────────────────────────────────────────────
 
-// runGUI starts the window goroutine. Call from a real main() like:
+// runGUI starts the manager goroutine. Call from a real main() like:
 //
 //	func main() {
 //	    runGUI()
@@ -108,28 +115,90 @@ func snapshot() overlayStateT {
 //	    app.Main()
 //	}
 func runGUI() {
-	go func() {
-		w := new(app.Window)
-		w.Option(
-			app.Title("macro"),
-			app.Size(unit.Dp(420), unit.Dp(160)),
-			app.Decorated(false),
-			app.MinSize(unit.Dp(420), unit.Dp(160)),
-			app.MaxSize(unit.Dp(420), unit.Dp(160)),
-		)
-		if err := guiLoop(w); err != nil {
-			p.Error("gui error:", err)
-		}
-	}()
+	go guiManager()
 }
 
-func guiLoop(w *app.Window) error {
+func guiManager() {
+	var (
+		open       bool
+		redrawChan chan struct{} // forwarded to the active window's loop
+		closedChan chan struct{} // closed by the window loop when it exits
+	)
+
+	for range overlayChanged {
+		st := snapshotMode()
+
+		if st != modeIdle && !open {
+			open = true
+			redrawChan = make(chan struct{}, 1)
+			closedChan = make(chan struct{})
+			go func(redraw <-chan struct{}, closed chan<- struct{}) {
+				defer close(closed)
+				if err := openWindow(redraw); err != nil {
+					p.Error("gui error:", err)
+				}
+			}(redrawChan, closedChan)
+			continue
+		}
+
+		if st == modeIdle && open {
+			select {
+			case redrawChan <- struct{}{}: // wake it so it notices idle
+			default:
+			}
+			closeActiveWindow()
+			<-closedChan
+			open = false
+			continue
+		}
+
+		if open {
+			select {
+			case redrawChan <- struct{}{}:
+			default:
+			}
+		}
+	}
+}
+
+// activeWindow lets guiManager ask the currently-open window to close.
+var (
+	activeWindowMu sync.Mutex
+	activeWindow   *app.Window
+)
+
+func closeActiveWindow() {
+	activeWindowMu.Lock()
+	w := activeWindow
+	activeWindowMu.Unlock()
+	if w != nil {
+		w.Perform(system.ActionClose)
+	}
+}
+
+func openWindow(redraw <-chan struct{}) error {
+	w := new(app.Window)
+	w.Option(
+		app.Title("macro"),
+		app.Size(unit.Dp(420), unit.Dp(160)),
+		app.Decorated(false),
+		app.MinSize(unit.Dp(420), unit.Dp(160)),
+		app.MaxSize(unit.Dp(420), unit.Dp(160)),
+	)
+
+	activeWindowMu.Lock()
+	activeWindow = w
+	activeWindowMu.Unlock()
+	defer func() {
+		activeWindowMu.Lock()
+		activeWindow = nil
+		activeWindowMu.Unlock()
+	}()
+
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	var ops op.Ops
 
-	// Pump real window events into a channel so we can select against our
-	// own overlayChanged notifications too.
 	events := make(chan any)
 	acks := make(chan struct{})
 	go func() {
@@ -153,14 +222,23 @@ func guiLoop(w *app.Window) error {
 			case app.FrameEvent:
 				gtx := app.NewContext(&ops, e)
 				st := snapshot()
+				if st.mode == modeIdle {
+					// Mode flipped back to idle between the close request
+					// and this frame; bail instead of drawing a stale frame.
+					w.Perform(system.ActionClose)
+				}
 				drawOverlay(gtx, th, st)
 				e.Frame(gtx.Ops)
 				acks <- struct{}{}
 			default:
 				acks <- struct{}{}
 			}
-		case <-overlayChanged:
-			w.Invalidate()
+		case <-redraw:
+			if snapshotMode() == modeIdle {
+				w.Perform(system.ActionClose)
+			} else {
+				w.Invalidate()
+			}
 		}
 	}
 }
@@ -181,7 +259,7 @@ func drawOverlay(gtx layout.Context, th *material.Theme, st overlayStateT) {
 
 	switch st.mode {
 	case modeIdle:
-		return // blank window while nothing is happening
+		return
 
 	case modeRecording:
 		layout.Flex{Axis: layout.Vertical, Alignment: layout.Middle}.Layout(gtx,
