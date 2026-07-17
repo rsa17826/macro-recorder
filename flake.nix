@@ -46,7 +46,7 @@
             pname = "macro-recorder";
             version = "1";
             src = ./.;
-            vendorHash = "sha256-ZxqT3z3E7S5d3d07OYrTm7um9FWNvG0ww/OQMBtm9zE=";
+            vendorHash = "sha256-O58Ab1+PgTsZ0LyV5EbhL3bIf7uvO0CxR0ppXgOxyJ4=";
 
             nativeBuildInputs = [
               pkgs.pkg-config
@@ -54,7 +54,7 @@
             ]
             ++ gioBuildDeps;
             buildInputs = gioNativeDeps;
-
+            proxyVendor = true;
             # gio's cgo code dlopen()s some of these at runtime too, so make
             # sure the built binary(ies) can find them even outside a devShell.
             postFixup = ''
