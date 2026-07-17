@@ -30,13 +30,13 @@
           libXi
           libGL
           libglvnd
+          vulkan-headers
           vulkan-loader
         ];
 
         # Extra build-time-only deps: C headers + .pc files needed to compile
         # the cgo code (not needed once the binary is built).
         gioBuildDeps = with pkgs; [
-          vulkan-headers
           wayland-protocols
         ];
       in
