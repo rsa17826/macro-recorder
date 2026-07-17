@@ -46,6 +46,7 @@ import (
 	"sync"
 	"time"
 
+	"gioui.org/app"
 	input "github.com/rsa17826/go-input-lib"
 	pp "github.com/rsa17826/gopp"
 	"github.com/rsa17826/input-manager/IMan"
@@ -284,12 +285,65 @@ func sleepInterruptible(d time.Duration, abort <-chan struct{}) bool {
 	}
 }
 
+// tokenizeDisplay walks the same grammar as PlayMacro and returns one
+// human-readable label per step, in execution order. Steps here must stay
+// 1:1 with the "advanceStep" calls added in PlayMacro below.
+func tokenizeDisplay(sequence string) []string {
+	var out []string
+	i := 0
+	length := len(sequence)
+	for i < length {
+		char := string(sequence[i])
+		switch char {
+		case "^":
+			out = append(out, "ctrl")
+			i++
+		case "+":
+			out = append(out, "shift")
+			i++
+		case "{":
+			endIdx := strings.Index(sequence[i:], "}")
+			if endIdx == -1 {
+				i++
+				continue
+			}
+			blockContent := strings.ToLower(sequence[i+1 : i+endIdx])
+			i += endIdx + 1
+			parts := strings.Fields(blockContent)
+			if len(parts) == 0 {
+				continue
+			}
+			out = append(out, strings.Join(parts, " "))
+		default:
+			out = append(out, char)
+			i++
+		}
+	}
+	return out
+}
+
+// tokenAt returns the display label at idx, or "" if out of range.
+func tokenAt(tokens []string, idx int) string {
+	if idx < 0 || idx >= len(tokens) {
+		return ""
+	}
+	return tokens[idx]
+}
+
 // PlayMacro plays back a macro body against send. If delayEnabled is false,
 // {delay ...} blocks are skipped entirely. Playback stops immediately if
 // abort fires (e.g. because Esc was pressed).
-func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string, abort <-chan struct{}) {
+func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string, abort <-chan struct{}, slotName string) {
 	i := 0
 	length := len(sequence)
+
+	tokens := tokenizeDisplay(sequence)
+	step := 0
+	advanceStep := func() {
+		setPlaying(slotName, tokenAt(tokens, step-1), tokenAt(tokens, step), tokenAt(tokens, step+1))
+		step++
+	}
+	defer setIdle()
 
 	ctrlActive := false
 	shiftActive := false
@@ -347,12 +401,14 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 
 		switch char {
 		case "^":
+			advanceStep()
 			if sendKey(input.KEY_LEFTCTRL, 1) {
 				break
 			}
 			ctrlActive = true
 			i++
 		case "+":
+			advanceStep()
 			if sendKey(input.KEY_LEFTSHIFT, 1) {
 				break
 			}
@@ -371,6 +427,7 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 			if len(parts) == 0 {
 				continue
 			}
+			advanceStep()
 
 			// {delay Nms}
 			if parts[0] == "delay" && len(parts) >= 2 {
@@ -425,6 +482,7 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 			}
 
 		default:
+			advanceStep()
 			key := input.CharKeyMap[rune(strings.ToLower(char)[0])]
 			code := key.Code
 			newshift := false
@@ -462,6 +520,12 @@ func isModifierCode(code uint16) bool {
 var p = pp.New()
 
 func main() {
+	runGUI()
+	go runDaemon()
+	app.Main()
+}
+
+func runDaemon() {
 	filterConn, err := IMan.Connect("macro-daemon", IMan.ModeFilter)
 	if err != nil {
 		panic(err)
@@ -506,6 +570,7 @@ func main() {
 			if modHeld && recordingSlot != 0 {
 				recordingSlot = 0
 				p.Log("macro recording aborted")
+				setIdle()
 				filterConn.BlockInput(ev.Seq, 1)
 			} else {
 				if globalPlayState.Active {
@@ -552,7 +617,7 @@ func main() {
 					abort := globalPlayState.Start()
 					go func() {
 						defer globalPlayState.Stop()
-						PlayMacro(sendConn, delayEnabled, seq, abort)
+						PlayMacro(sendConn, delayEnabled, seq, abort, KeyName(code))
 					}()
 				}
 
@@ -565,6 +630,7 @@ func main() {
 					firstToken = true
 					keysDownInMacro = map[uint16]bool{}
 					p.Log(fmt.Sprintf("recording macro on %q...", KeyName(code)))
+					setRecording(KeyName(code), "")
 				case code:
 					if err := saveMacro(code, false, recordBuf.String()); err != nil {
 						p.Error("failed to save macro:", err)
@@ -572,6 +638,7 @@ func main() {
 						p.Success(fmt.Sprintf("saved macro %q: %s", KeyName(code), recordBuf.String()))
 					}
 					recordingSlot = 0
+					setIdle()
 				default:
 					p.Warn(fmt.Sprintf("already recording %q, ignoring %q", KeyName(recordingSlot), KeyName(code)))
 				}
@@ -595,6 +662,7 @@ func main() {
 				fmt.Fprintf(&recordBuf, "{%s down}", KeyName(code))
 				lastEventTime = now
 				firstToken = false
+				setRecording(KeyName(recordingSlot), fmt.Sprintf("%s down", KeyName(code)))
 			} else {
 				// key up: only record it if this macro actually recorded the
 				// matching down -- avoids leading "up" noise from keys that
@@ -609,6 +677,7 @@ func main() {
 					fmt.Fprintf(&recordBuf, "{%s up}", KeyName(code))
 					lastEventTime = now
 					firstToken = false
+					setRecording(KeyName(recordingSlot), fmt.Sprintf("%s up", KeyName(code)))
 				} else {
 					// swallow silently, but resync the clock so the skipped
 					// time doesn't get charged to the next real delay
