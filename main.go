@@ -495,7 +495,7 @@ func main() {
 		ev := re.Event
 
 		if ev.Type != input.EV_KEY {
-			filterConn.BlockInput(0)
+			filterConn.BlockInput(ev.Seq, 0)
 			continue
 		}
 		code := ev.Code
@@ -506,12 +506,12 @@ func main() {
 			if modHeld && recordingSlot != 0 {
 				recordingSlot = 0
 				p.Log("macro recording aborted")
-				filterConn.BlockInput(1)
+				filterConn.BlockInput(ev.Seq, 1)
 			} else {
 				if globalPlayState.Active {
-					filterConn.BlockInput(1)
+					filterConn.BlockInput(ev.Seq, 1)
 				} else {
-					filterConn.BlockInput(0)
+					filterConn.BlockInput(ev.Seq, 0)
 				}
 			}
 			globalPlayState.Abort()
@@ -519,14 +519,14 @@ func main() {
 		}
 
 		if isModifierCode(code) {
-			filterConn.BlockInput(0)
+			filterConn.BlockInput(ev.Seq, 0)
 			continue
 		}
 
 		if modHeld && ev.Value == 1 {
 			shiftHeld := filterConn.IsPressed(playKey)
 			ctrlHeld := filterConn.IsPressed(input.KEY_LEFTCTRL)
-			filterConn.BlockInput(1) // swallow the trigger key itself
+			filterConn.BlockInput(ev.Seq, 1) // swallow the trigger key itself
 
 			switch {
 			case ctrlHeld:
@@ -618,6 +618,6 @@ func main() {
 		}
 		recMu.Unlock()
 
-		filterConn.BlockInput(0)
+		filterConn.BlockInput(ev.Seq, 0)
 	}
 }

@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	github.com/rsa17826/go-input-lib v0.0.39
 	github.com/rsa17826/gopp v0.0.4
-	github.com/rsa17826/input-manager v0.0.80
+	github.com/rsa17826/input-manager v0.0.83
 )
 
 require (
