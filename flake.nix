@@ -25,7 +25,7 @@
             pname = "macro-recorder";
             version = "1";
             src = ./.;
-            vendorHash = "sha256-dn6SqvH1TTzz3XtUZpmavE/gMAc3IgtH1tUXSJ9qOMQ=";
+            vendorHash = "sha256-G3I61bfAJbfqSiYK5d5idNUF4mnmZ1wt0oX4+tZe32k=";
           };
         };
         devShells = {
