@@ -11,12 +11,12 @@ github.com/go-text/typesetting-utils v0.0.0-20260223113751-2d88ac90dae3 h1:drBZz
 github.com/go-text/typesetting-utils v0.0.0-20260223113751-2d88ac90dae3/go.mod h1:3/62I4La/HBRX9TcTpBj4eipLiwzf+vhI+7whTc9V7o=
 github.com/rsa17826/go-arg-lib v0.0.69 h1:G7TYCqUIw3z0QO2v5NHG4VDgY+5JR2nYInGDgxkoFdY=
 github.com/rsa17826/go-arg-lib v0.0.69/go.mod h1:eP/bXinIXD6bZWBMqk9eZJfkkKUcl66j0uuz1amrsdU=
-github.com/rsa17826/go-input-lib v0.0.46 h1:bcBAZ1niIfyEppqO679JwSGMpYQs8xs+GS1huCJMjts=
-github.com/rsa17826/go-input-lib v0.0.46/go.mod h1:T1wppzAanzal1KNtIJpew4sIFwCtlBWegq0vDriqwC0=
+github.com/rsa17826/go-input-lib v0.0.48 h1:nAj/zxC4phvvLcpuENYQjuqBYh81cgnoLtDhNz7/7j4=
+github.com/rsa17826/go-input-lib v0.0.48/go.mod h1:T1wppzAanzal1KNtIJpew4sIFwCtlBWegq0vDriqwC0=
 github.com/rsa17826/gopp v0.0.4 h1:wxRCIW6oMkZBAaZTh7KPkoiISaWabAJ6BLtXDcA5BKU=
 github.com/rsa17826/gopp v0.0.4/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
-github.com/rsa17826/input-manager v0.0.85 h1:CcSBNKsoBoUU7045LruOeXx8JhzLbaRYMCRm57OrMfc=
-github.com/rsa17826/input-manager v0.0.85/go.mod h1:roxAmjwCUVQ/inEH3vjYgbEhjbjtAmFGKDfz/wjnMr8=
+github.com/rsa17826/input-manager v0.0.87 h1:GUMxqsZFXnKesP54xW21dFCkaLs1q1d1B5ORUo0EUFw=
+github.com/rsa17826/input-manager v0.0.87/go.mod h1:js57PX7On+OhLIxqTa7rdLO4Mgrd1RWQpM4+UtRWX7U=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0/go.mod h1:S9Xr4PYopiDyqSyp5NjCrhFrqg6A5zA2E/iPHPhqnS8=
 golang.org/x/exp/shiny v0.0.0-20250408133849-7e4ce0ab07d0 h1:tMSqXTK+AQdW3LpCbfatHSRPHeW6+2WuxaVQuHftn80=
