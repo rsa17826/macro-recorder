@@ -56,71 +56,9 @@ import (
 // Key name <-> code table
 // ─────────────────────────────────────────────────────────────────────────
 
-// namedKeys covers every non-printable / control key in types.go.
-var namedKeys = map[string]uint16{
-	"esc": input.KEY_ESC, "escape": input.KEY_ESC, "tab": input.KEY_TAB, "enter": input.KEY_ENTER, "\\n": input.KEY_ENTER,
-	"bs": input.KEY_BACKSPACE, "backspace": input.KEY_BACKSPACE, "spc": input.KEY_SPACE, "space": input.KEY_SPACE,
-	"capslock": input.KEY_CAPSLOCK, "numlock": input.KEY_NUMLOCK, "scrolllock": input.KEY_SCROLLLOCK,
-	"ctrl": input.KEY_LEFTCTRL, "lctrl": input.KEY_LEFTCTRL, "rctrl": input.KEY_RIGHTCTRL, "<ctrl": input.KEY_LEFTCTRL, ">ctrl": input.KEY_RIGHTCTRL,
-	"shift": input.KEY_LEFTSHIFT, "lshift": input.KEY_LEFTSHIFT, "rshift": input.KEY_RIGHTSHIFT, "<shift": input.KEY_LEFTSHIFT, ">shift": input.KEY_RIGHTSHIFT,
-	"alt": input.KEY_LEFTALT, "lalt": input.KEY_LEFTALT, "ralt": input.KEY_RIGHTALT, "<alt": input.KEY_LEFTALT, ">alt": input.KEY_RIGHTALT,
-	//
-	"<super": input.KEY_LEFTMETA, ">super": input.KEY_RIGHTMETA,
-	"super": input.KEY_LEFTMETA, "lsuper": input.KEY_LEFTMETA, "rsuper": input.KEY_RIGHTMETA,
-	"<meta": input.KEY_LEFTMETA, ">meta": input.KEY_RIGHTMETA,
-	"meta": input.KEY_LEFTMETA, "lmeta": input.KEY_LEFTMETA, "rmeta": input.KEY_RIGHTMETA,
-	"<win": input.KEY_LEFTMETA, ">win": input.KEY_RIGHTMETA,
-	"win": input.KEY_LEFTMETA, "lwin": input.KEY_LEFTMETA, "rwin": input.KEY_RIGHTMETA,
-	//
-	"home": input.KEY_HOME, "end": input.KEY_END, "ins": input.KEY_INSERT, "insert": input.KEY_INSERT,
-	"del": input.KEY_DELETE, "delete": input.KEY_DELETE,
-	"pgup": input.KEY_PAGEUP, "pageup": input.KEY_PAGEUP, "pgdown": input.KEY_PAGEDOWN, "pagedown": input.KEY_PAGEDOWN,
-	"up": input.KEY_UP, "down": input.KEY_DOWN, "left": input.KEY_LEFT, "right": input.KEY_RIGHT,
-	"pause": input.KEY_PAUSE, "sysrq": input.KEY_SYSRQ, "printscreen": input.KEY_SYSRQ,
-	"kp0": input.KEY_KP0, "kp1": input.KEY_KP1, "kp2": input.KEY_KP2, "kp3": input.KEY_KP3, "kp4": input.KEY_KP4,
-	"kp5": input.KEY_KP5, "kp6": input.KEY_KP6, "kp7": input.KEY_KP7, "kp8": input.KEY_KP8, "kp9": input.KEY_KP9,
-	"kp.": input.KEY_KPDOT, "kpdot": input.KEY_KPDOT, "kp/": input.KEY_KPSLASH, "kpslash": input.KEY_KPSLASH, "kp*": input.KEY_KPASTERISK, "kpasterisk": input.KEY_KPASTERISK, "kpstar": input.KEY_KPASTERISK,
-	"kp-": input.KEY_KPMINUS, "kpsub": input.KEY_KPMINUS, "kpminus": input.KEY_KPMINUS, "kp+": input.KEY_KPPLUS, "kpadd": input.KEY_KPPLUS, "kpplus": input.KEY_KPPLUS, "kp\\n": input.KEY_KPENTER, "kpenter": input.KEY_KPENTER, "kp=": input.KEY_KPEQUAL, "kpequal": input.KEY_KPEQUAL,
-	"f1": input.KEY_F1, "f2": input.KEY_F2, "f3": input.KEY_F3, "f4": input.KEY_F4, "f5": input.KEY_F5,
-	"f6": input.KEY_F6, "f7": input.KEY_F7, "f8": input.KEY_F8, "f9": input.KEY_F9, "f10": input.KEY_F10,
-	"f11": input.KEY_F11, "f12": input.KEY_F12, "f13": input.KEY_F13, "f14": input.KEY_F14, "f15": input.KEY_F15,
-	"f16": input.KEY_F16, "f17": input.KEY_F17, "f18": input.KEY_F18, "f19": input.KEY_F19, "f20": input.KEY_F20,
-	"f21": input.KEY_F21, "f22": input.KEY_F22, "f23": input.KEY_F23, "f24": input.KEY_F24,
-}
-
-// codeToName is built at init time: printable keys map to their unshifted
-// character, everything else falls back to namedKeys, and anything totally
-// unknown falls back to "codeN".
-var codeToName = map[uint16]string{}
-
-func init() {
-	for r, info := range input.CharKeyMap {
-		if info.Shift {
-			continue // only keep the unshifted rune as the canonical name
-		}
-		if _, exists := codeToName[info.Code]; !exists {
-			codeToName[info.Code] = string(r)
-		}
-	}
-	for name, code := range namedKeys {
-		if _, exists := codeToName[code]; !exists {
-			codeToName[code] = name
-		}
-	}
-}
-
 // KeyName returns the canonical macro-block / filename-safe name for a keycode.
 func KeyName(code uint16) string {
-	if name, ok := codeToName[code]; ok {
-		if name == " " {
-			return "spc"
-		}
-		if name == "\n" {
-			return "\\n"
-		}
-		if name == "\t" {
-			return "\\t"
-		}
+	if name, ok := input.KeyToString[code]; ok {
 		return name
 	}
 	return fmt.Sprintf("code%d", code)
@@ -129,7 +67,7 @@ func KeyName(code uint16) string {
 // KeyCodeByName resolves a macro-block name back to a keycode.
 func KeyCodeByName(name string) (uint16, bool) {
 	name = strings.ToLower(name)
-	if code, ok := namedKeys[name]; ok {
+	if code, ok := input.StringToKey[name]; ok {
 		return code, true
 	}
 	if strings.HasPrefix(name, "code") {
@@ -509,14 +447,6 @@ func PlayMacro(send *IMan.ManagerConnection, delayEnabled bool, sequence string,
 const modifierKey = input.KEY_COMPOSE // hold this to arm record/play/edit triggers
 const playKey = input.KEY_RIGHTSHIFT  // hold this to arm record/play/edit triggers
 
-func isModifierCode(code uint16) bool {
-	switch code {
-	case modifierKey, input.KEY_LEFTCTRL, input.KEY_RIGHTCTRL, input.KEY_LEFTSHIFT, input.KEY_RIGHTSHIFT:
-		return true
-	}
-	return false
-}
-
 var p = pp.New()
 
 func main() {
@@ -564,7 +494,12 @@ func runDaemon() {
 		}
 		code := ev.Code
 
+		if code == modifierKey && ev.Value != 0 {
+			filterConn.BlockInput(ev.Seq, 1)
+			continue
+		}
 		modHeld := filterConn.IsPressed(modifierKey)
+		// println(modHeld, ev.Value)
 		// Esc aborts an in-flight macro, but otherwise behaves normally.
 		if code == input.KEY_ESC && ev.Value == 1 {
 			if modHeld && recordingSlot != 0 {
@@ -583,12 +518,12 @@ func runDaemon() {
 			continue
 		}
 
-		if isModifierCode(code) {
-			filterConn.BlockInput(ev.Seq, 0)
-			continue
-		}
+		// if isModifierCode(code) {
+		// 	filterConn.BlockInput(ev.Seq, 0)
+		// 	continue
+		// }
 
-		if modHeld && ev.Value == 1 {
+		if modHeld && ev.Value == 1 && ev.Code != input.KEY_LEFTCTRL && ev.Code != modifierKey {
 			shiftHeld := filterConn.IsPressed(playKey)
 			ctrlHeld := filterConn.IsPressed(input.KEY_LEFTCTRL)
 			filterConn.BlockInput(ev.Seq, 1) // swallow the trigger key itself
