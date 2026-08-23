@@ -46,7 +46,7 @@
             pname = "macro-recorder";
             version = "1";
             src = ./.;
-            vendorHash = "sha256-vwibRgj4snogMHmiiS0CnxFd5cLBNF4a/nOJ92pAR+s=";
+            vendorHash = "sha256-1meYpeGzJUn19BMgJPi1RFHH6tZF4hRMzKix8vAkLn0=";
 
             nativeBuildInputs = [
               pkgs.pkg-config
