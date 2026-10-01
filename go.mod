@@ -4,9 +4,6 @@ go 1.26.4
 
 require (
 	gioui.org v0.10.1
-	github.com/rsa17826/go-input-lib v0.0.49
-	github.com/rsa17826/gopp v0.0.4
-	github.com/rsa17826/input-manager v0.0.97
 )
 
 require (
