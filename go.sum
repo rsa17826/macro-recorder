@@ -15,8 +15,8 @@ github.com/rsa17826/go-input-lib v0.0.0-20261001191129-f7ffa70e22d2 h1:qttlUo9Pv
 github.com/rsa17826/go-input-lib v0.0.0-20261001191129-f7ffa70e22d2/go.mod h1:By7aTrFtrT95EfVosuwiOAhQyHwQ2hjWeG0O8sUQ28s=
 github.com/rsa17826/gopp v0.0.4 h1:wxRCIW6oMkZBAaZTh7KPkoiISaWabAJ6BLtXDcA5BKU=
 github.com/rsa17826/gopp v0.0.4/go.mod h1:HxbV9hxUw6MT4Lcwz2HkpLghANdpm93I3rLgot15xK8=
-github.com/rsa17826/input-manager v0.0.98-0.20261001191133-31547c3b842d h1:rrZFKpA08MyGd+ulnJOmgAmPe4m8K2Kti+HrmRU9uqY=
-github.com/rsa17826/input-manager v0.0.98-0.20261001191133-31547c3b842d/go.mod h1:cHr/L9USiAkRNDcIDRaJrYa83Ig6JorUdUEeF4pJG+s=
+github.com/rsa17826/input-manager v0.0.0-20261001192832-78b754c3d494 h1:f396lReBk5sZ2uE4UddtfukAYXSepaWGZvdUOfB6cB4=
+github.com/rsa17826/input-manager v0.0.0-20261001192832-78b754c3d494/go.mod h1:cHr/L9USiAkRNDcIDRaJrYa83Ig6JorUdUEeF4pJG+s=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 h1:R84qjqJb5nVJMxqWYb3np9L5ZsaDtB+a39EqjV0JSUM=
 golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0/go.mod h1:S9Xr4PYopiDyqSyp5NjCrhFrqg6A5zA2E/iPHPhqnS8=
 golang.org/x/exp/shiny v0.0.0-20250408133849-7e4ce0ab07d0 h1:tMSqXTK+AQdW3LpCbfatHSRPHeW6+2WuxaVQuHftn80=
